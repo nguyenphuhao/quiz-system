@@ -51,4 +51,18 @@ There are 2 database are used
 ## Dataflow
 ![image](https://github.com/user-attachments/assets/7549e265-0f92-4436-9ed7-a652ffcc028d)
 
+### Techstack
+![image](https://github.com/user-attachments/assets/bb6004b1-3cc8-4b62-a4df-0a94a48bd4a7)
+![image](https://github.com/user-attachments/assets/d7132e17-69e9-4fee-bea1-1d7f60356cc4)
+![image](https://github.com/user-attachments/assets/d8f02c39-ad00-4b92-b30e-f190e2b0de92)
+![image](https://github.com/user-attachments/assets/0da08b81-ed15-4548-a87d-116713f69003)
+![image](https://github.com/user-attachments/assets/45a85f7c-a7e9-433f-8d64-fdc9c0533923)
+![image](https://github.com/user-attachments/assets/69ef0944-9047-4961-8deb-d77f735f0bf7)
+![image](https://github.com/user-attachments/assets/3f52beb9-1a45-41da-a2aa-dca4b5974beb)
+![image](https://github.com/user-attachments/assets/2cc54de6-3639-46be-9e41-522453782840)
+
+
+
+
+
 
