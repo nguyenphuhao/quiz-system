@@ -5,14 +5,16 @@ import { QuizzesModule } from './quizzes/quizzes.module';
 import { BullModule } from '@nestjs/bullmq';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import loadEnvs from './loadEnvs';
 import { MessageQueuesModule } from './shared/messageQueues/messageQueues.module';
 import { DatabaseModule } from './shared/database/database.module';
-import { QUIZ_RANKING } from './shared/constants/queues';
+import { QUIZ_RANKING } from './shared/messageQueues/queues';
 import { CachingModule } from './shared/caching/caching.module';
 import { AuthAPIModule } from './auth/auth.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
+import { BullBoardModule } from '@bull-board/nestjs';
+import { RankingModule } from './ranking/ranking.module';
 
 @Module({
   imports: [
@@ -26,19 +28,14 @@ import { LeaderboardModule } from './leaderboard/leaderboard.module';
       ttl: 60,
       limit: 100,
     }]),
-
     DatabaseModule,
     CachingModule,
     MessageQueuesModule,
-    BullModule.registerQueue({
-      name: QUIZ_RANKING,
-    }),
-    // BullModule.registerQueue({
-    //   name: LEADERBOARD_SYNC,
-    // }),
+    BullBoardModule,
     AuthAPIModule,
     QuizzesModule,
     LeaderboardModule,
+    RankingModule
 
   ],
   controllers: [AppController],

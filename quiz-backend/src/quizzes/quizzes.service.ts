@@ -6,7 +6,8 @@ import { SingleChoiceQuestions } from "../shared/database/singleChoiceQuestions/
 import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
 import { QuizSessionStatuses } from "../shared/constants/quizzes";
 import { UserQuizSession, UserQuizSessionKey, UserQuizSessionSubmission } from "./quizzes.interface";
-import { keyBy, round } from "lodash";
+import { keyBy } from "lodash";
+import { RankingProducer } from '../ranking/ranking.producer';
 
 @Injectable()
 export class QuizzesService {
@@ -14,6 +15,7 @@ export class QuizzesService {
     @InjectModel(Quizzes) private readonly quizzesModel: typeof Quizzes,
     @InjectModel(QuizzesSessions) private readonly quizzesParticipants: typeof QuizzesSessions,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    private rankingProducer: RankingProducer
   ) { }
 
   private getUserQuizSessionKey(payload: {
@@ -37,7 +39,10 @@ export class QuizzesService {
       where: {
         id: quizId
       },
-      include: [SingleChoiceQuestions]
+      include: [{
+        model: SingleChoiceQuestions,
+        required: true
+      }]
     });
 
     return quiz;
@@ -46,7 +51,10 @@ export class QuizzesService {
   async getAllQuizzes() {
     const quizzes = await this.quizzesModel.findAll({
       nest: true,
-      include: [SingleChoiceQuestions]
+      include: [{
+        model: SingleChoiceQuestions,
+        required: true
+      }]
     });
 
     return quizzes;
@@ -75,7 +83,6 @@ export class QuizzesService {
         status: QuizSessionStatuses.IN_PROGRESS,
       }
     });
-    // await this.cacheManager.set(this.getUserQuizSessionKey({ quizId, userId }), JSON.stringify(joinSession));
     return createdSession;
   }
 
@@ -87,7 +94,10 @@ export class QuizzesService {
       },
       include: [{
         model: Quizzes,
-        include: [SingleChoiceQuestions]
+        include: [{
+          model: SingleChoiceQuestions,
+          required: true
+        }]
       }]
     });
     if (!userQuizSession) {
@@ -125,31 +135,9 @@ export class QuizzesService {
     }
     const updatedSession = updatedSessions[0].get({ plain: true });
 
-    const leaderboardKey = `leaderboard-${quizId}`;
-    const leaderboard = await this.quizzesParticipants.findAll({
-      raw: true,
-      nest: true,
-      where: {
-        quizId,
-        status: QuizSessionStatuses.COMPLETED
-      },
-      order: [
-        ['totalCorrectAnswers', 'DESC'],
-        ['createdAt', 'ASC']
-      ]
-    })
-    if (leaderboard) {
-      await this.cacheManager.set(leaderboardKey, JSON.stringify({
-        quizId,
-        quizName: userQuizSession.quiz?.title,
-        totalQuestions: userQuizSession.quiz?.singleChoiceQuestions?.length,
-        participants: leaderboard
-      }))
-    }
+    this.rankingProducer.emitRank({ quizId });
 
-    return {
-      ...updatedSession,
-    };
+    return updatedSession
   }
 
   async getQuizResult(payload: UserQuizSessionKey) {
@@ -167,7 +155,10 @@ export class QuizzesService {
       ],
       include: [{
         model: Quizzes,
-        include: [SingleChoiceQuestions]
+        include: [{
+          model: SingleChoiceQuestions,
+          required: true
+        }]
       }]
     });
     return {

@@ -1,13 +1,58 @@
-import { InjectQueue, WorkerHost } from "@nestjs/bullmq";
-import { Injectable } from "@nestjs/common";
-import { Job, Queue } from "bullmq";
+import { Processor, WorkerHost } from "@nestjs/bullmq";
+import { Inject } from "@nestjs/common";
+import { Job } from "bullmq";
+import { QUIZ_RANKING } from "../shared/messageQueues/queues";
+import { InjectModel } from "@nestjs/sequelize";
+import { QuizzesSessions } from "../shared/database/quizzesSessions/quizzesSessions.model";
+import { QuizSessionStatuses } from "../shared/constants/quizzes";
+import { CACHE_MANAGER, Cache } from "@nestjs/cache-manager";
+import { Quizzes } from "../shared/database/quizzes/quizzes.model";
+import { SingleChoiceQuestions } from "../shared/database/singleChoiceQuestions/singleChoiceQuestions.model";
+import { RankingJobData } from "./ranking.interface";
 
-@Injectable()
-export class ScoreConsumer extends WorkerHost {
-  process(job: Job, token?: string): Promise<any> {
-    //Calculate score - get quiz and answer for the question from db
-    //sync score to redis session
-    //add to leaderboard.sync queue
-    return;
+@Processor(QUIZ_RANKING)
+export class RankingConsumer extends WorkerHost {
+  constructor(
+    @InjectModel(Quizzes) private readonly quizzesModel: typeof Quizzes,
+    @InjectModel(QuizzesSessions) private readonly quizzesParticipants: typeof QuizzesSessions,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  ) {
+    super();
+  }
+
+  async process(job: Job, token?: string): Promise<any> {
+    const { quizId } = job.data as RankingJobData;
+    //broadcast to web socket
+    const leaderboardKey = `leaderboard-${quizId}`;
+    const quiz = await this.quizzesModel.findOne({
+      nest: true,
+      where: {
+        id: quizId
+      },
+      include: [{
+        model: SingleChoiceQuestions,
+        required: true
+      }]
+    });
+    const participants = await this.quizzesParticipants.findAll({
+      raw: true,
+      nest: true,
+      where: {
+        quizId,
+        status: QuizSessionStatuses.COMPLETED
+      },
+      order: [
+        ['totalCorrectAnswers', 'DESC'],
+        ['createdAt', 'ASC']
+      ]
+    })
+    if (participants) {
+      await this.cacheManager.set(leaderboardKey, JSON.stringify({
+        quizId,
+        quizName: quiz?.title,
+        totalQuestions: quiz?.singleChoiceQuestions?.length,
+        participants
+      }));
+    }
   }
 }
