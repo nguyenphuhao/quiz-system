@@ -15,6 +15,7 @@ import { AuthAPIModule } from './auth/auth.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { BullBoardModule } from '@bull-board/nestjs';
 import { RankingModule } from './ranking/ranking.module';
+import { LeaderboardGatewayModule } from './leaderboard/leaderboardgw.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RankingModule } from './ranking/ranking.module';
     AuthAPIModule,
     QuizzesModule,
     LeaderboardModule,
+    LeaderboardGatewayModule,
     RankingModule
 
   ],

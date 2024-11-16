@@ -5,7 +5,7 @@
 
 ### Front End App
 
-The front end app here is Web App that is built on top of Reactjs, especial Nextjs framework. It will integrate with Back End services via RESTful API.
+The front end app here is Web App that is built on top of Reactjs, especially Nextjs framework. It will integrate with Back End services via RESTful API.
 
 ### APIs
 

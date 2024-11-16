@@ -6,6 +6,8 @@ import { useAuthContext } from "../../../providers/AuthProvider";
 import axios from "axios";
 import { ApiEndpoint } from "../../../config/apiEndpoints";
 import { Loader } from "../../../components/Loader/Loader";
+import { io } from "socket.io-client";
+import { useEffect } from "react";
 
 export default function Result() {
   const searchParams = useSearchParams();
@@ -25,6 +27,13 @@ export default function Result() {
       return response.data;
     },
   });
+
+  const socketClient = io("http://localhost:4000");
+  useEffect(() => {
+    if (quizResult) {
+      socketClient.emit("leaderboard.update", quizId);
+    }
+  }, [quizResult]);
 
   if (isLoading) {
     return <Loader />;

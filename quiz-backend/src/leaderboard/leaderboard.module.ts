@@ -10,6 +10,7 @@ import { QuizzesSessions } from '../shared/database/quizzesSessions/quizzesSessi
 @Module({
   imports: [CachingModule, SequelizeModule.forFeature([Quizzes, QuizzesQuestions, QuizzesSessions])],
   providers: [LeaderboardService],
-  controllers: [LeaderboardController]
+  controllers: [LeaderboardController],
+  exports: [LeaderboardService]
 })
 export class LeaderboardModule { }

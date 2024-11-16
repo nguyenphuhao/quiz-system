@@ -11,6 +11,7 @@ import { SingleChoiceQuestions } from "../shared/database/singleChoiceQuestions/
 
 @Processor(QUIZ_RANKING)
 export class LeaderboardConsumer extends WorkerHost {
+
   constructor(
     @InjectModel(Quizzes) private readonly quizzesModel: typeof Quizzes,
     @InjectModel(QuizzesSessions) private readonly quizzesParticipants: typeof QuizzesSessions,
